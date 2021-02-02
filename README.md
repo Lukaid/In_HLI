@@ -18,8 +18,8 @@ time in HLI
 ## branch 변경하기
 
  - branch란, 기존 내용을 유지하면서 새로운 내용을 추가하고 싶을때 사용한다.
- - check-out이란, 특정 branch(혹은 commit)으로 돌아가고 싶을 때 사용한다.
- - source_tree의 check-out은, branch의 이름을 더블클릭하는 것 만으로 check-out 가능.
+ - checkout이란, 특정 branch(혹은 commit)으로 돌아가고 싶을 때 사용한다.
+ - source_tree의 checkout은, branch의 이름을 더블클릭하는 것 만으로 checkout 가능.
 
  - main branch는 가장 기본 branch
  - 따라서 main branch에는 최종본이 들어가 있어야 한다.

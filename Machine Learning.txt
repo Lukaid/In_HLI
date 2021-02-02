@@ -1,0 +1,90 @@
+Machine Learning
+
+
+데이터로 패턴을 파악해 미래를 예측한다.
+-> 머신러닝
+
+
+머신러닝은 복잡한 패턴을 파악가능
+
+다양한 양질의 데이터와 적절한 알고리즘
+
+도메인 지식이 상대적으로부족해도 가능하다.
+
+데이터 학습으로 우리가 알지 못하는 영역에서도 일할 수 있음
+
+
+데이터 의존성이 매우 높음 (garbage in, garbage out)
+
+과적합의 오류에 빠질 수 있다. (일반화의 오류, 데이터 다양성 요구)
+- 데이터 편향 등
+
+풍부한 (양질의)데이터가 기본적으로 요구됨
+
+데이터, 예측해야 할 값에 맞는 알고리즘을 사용해야 한다.
+
+
+------------------
+
+가설함수 (Hypothesis)
+비용 (Cost)
+손실함수 (Loss Function) - 오차? (Y predict - Y)
+
+
+H(x) = W * x + b = Y predict
+Lost Function = H(x) - Y = W * x + b - Y
+
+MSE = 1/n * sum((H(x)-Y)^2)
+
+최적의 W를 찾는 것 = MSE를 최소화 하는 것
+
+Gradient Descent
+
+-------------------------
+
+학습 데이터, 예측 데이터
+features, labels, train, test
+
+학습을 해야하는 데이터 즉, X가 features (X_train, X_test)
+-예측 값은 빠져있음, 전처리 할때 빼야 함
+
+예측을 해야하는 값 즉, Y가 labels (Y_train, Y_test(Y_test는 없음))
+-예측 값만 존재
+
+학습을 위한 데이터 = training set
+-모델이 학습하기 위해 필요한 데이터, feature와 label이 모두 존재
+
+예측을 위한 데이터 = test set
+-모델이 예측하기 위한 데이터, feature만 존재
+
+model = LinearRegression() #모델 생성
+model.fit(X_train, Y_train) #모델 적합
+prediction = model.predict(X_test) #예측
+
+---------------------------
+
+과대적합 / 과소적합
+
+training error와 test error의 trade-off를 고려하여 과적합을 피해야 함
+-> Best Complexity (Optimum)
+
+training을 training과 validation으로 나눔
+training set으로 반복 학습을 시키면서 error를 낮춤 -> validation으로 검사함 
+-> training error는 감소하지만 validation error는 증가하는 구간 발생 -> 과적합 발생
+validation error를 최소화하는 training epoch이 Optimum
+
+--------------------------
+
+전처리 (pre-processing)
+-데이터 분석에 적합하게 데이터를 가공/ 변형/ 처리/ 클리닝
+-Garbage In, Garbage Out!!
+
+1. 결측치 - Imputer
+2. 이상치
+3. 정규화 (Normalizatin) - 0과 1사이 분포로 조정, X_new = (X - X_min) / (X_max - X_min)
+4. 표준화 (Standardization) - 평균을 0, 표준편차를 1로 맞춤
+5. 샘플링 (over/under sampling)
+6. 피처 공학 (feature Engineering)
+ - feature 생성/연산
+ - 구간생성, 스케일 변형 등
+

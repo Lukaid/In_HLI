@@ -1,0 +1,340 @@
+sql은 대소문자 구분 없는듯.
+
+select FIRST_NAME, LAST_NAME, EMAIL from customer;
+
+sql구동 순서?
+
+select 3
+FIRST_NAME, LAST_NAME, EMAIL 4 
+from 1 
+customer; 2
+
+
+alias 코드의 가독성 높임, as느낌?
+select c.FIRST_NAME, c.LAST_NAME, c.EMAIL from customer c;
+
+alias는 코드의 가독성 뿐 아니라 SQL의 성능도 높임
+
+DBMS에는 옵티마이저라는게 있음, 최적화 도구
+SQL을 어떻게 하면 가장 빠르게 하냐? 저비용으로 하냐? 이때 alais를 쓰면 비용이 낮아짐
+
+
+order by는 데이터 정렬
+
+order by c.first_name asc, c.last_name desc;
+asc는 오름차순 defaut, desc는 내림차순
+첫번째 쓴 칼럼기준으로 정렬하고, 동일하면 두번째 칼럼 기준으로 정렬
+select 뒤에 쓴 칼럼순서대로 1, 2, 3으로 인식하여
+order by 1 asc, 2 desc; 이렇게 써도 됨 - 근데 가독성때문에 안씀
+
+
+select distinct
+선택한 칼럼의 모든 row가 중복이면 날림
+select distinct BCOLOR, FCOLOR from T1 order by bcolor asc, fcolor asc;
+select distinct on (BCOLOR) BCOLOR, FCOLOR
+distinct on () 는 괄호안의 칼럼을 기준으로 중복을 날림, 즉 괄호안에 있는 칼럼의 값이
+중복이 되었다면 다른 칼럼은 중복이 아니라도 날아감. 근데 잘 안쓰긴함 ㅎㅎ;;
+
+조건달땐 where
+select c.first_name, c.last_name , c.email from customer c where c.first_name = 'Jamie';
+차이점: ''안에는 대소문자 구분하고, ==이 아니라 =을 씀
+where c.first_name = 'Jamie' and c.last_name = 'Rice' and로 이어주면 됨
+
+### dbeaver는 ctrl shift f누르면 코드 알아서 이쁘게 정렬해줌
+
+
+
+limit 출력하는 행의 수를 한정함
+limit n offset m -> m에서 부터 n개만 가져와 (offset은 0부터 넘버링, 따라서 m+1번째 row부터 가져옴)
+
+
+
+fetch - limit랑 비슷
+fetch first 10 row only; - 첫번째 row부터 10개 가져와
+offset 10 rows
+fetch first 10 row only; - offset으로 시작 행 지정
+fetch first row only; - 이렇게 쓰면 최초의 한건만 가져옴, 많이쓰임...
+
+
+in연산자
+특정 집합 (컬럼, 리스트)에서 특정 집합이 있는지 판단하는 연산자
+
+select
+	*
+from
+	TABLE_NAME
+where
+	COLUMN_NAME IN ( --> 서브 쿼리
+	select
+		COLUMN_NAME2
+	from
+		TABLE_NAME2) ;
+
+
+select
+	CUSTOMER_ID ,
+	RENTAL_ID ,
+	RETURN_DATE
+from
+	RENTAL
+where
+	CUSTOMER_ID in (1, 2) - > CUSTOMER_ID가 1 혹은 2인 것들 중에서, or연산이랑 같음
+order by
+	rental_date desc;
+
+
+where
+    CUSTOMER_ID = 1
+    or CUSTOMER_ID = 2 랑 같음
+
+not in 은 <>랑 같음 (얘는 and)
+
+
+
+select
+	first_name,
+	last_name
+from
+	customer
+where
+	customer_id in (
+	select
+		customer_id
+	from
+		rental
+	where
+		cast (rental_date as date) = '2005-05-27'); -- cast는 데이터 변환
+
+
+
+
+between 은 이상 이하 
+
+like는 특정패턴, 컬럼이 특정 패턴과 유사하면 추출
+		
+        	
+select
+	c.first_name ,
+	c.last_name
+from
+	customer c
+where
+	c.first_name like 'Jen%'; Jen으로 시작하는거 뱉어
+    %는 어떤 문자든, _는 한개의 문자만
+
+### ctrl + shift + x 는 대문자로 바꾸기
+
+
+join은 두개 이상의 테이블에서 사용자가 필요한 집합에 맞게 가상의 테이블 처럼 만들어서 결과를 보여주는 것
+
+data를 insert, update, delete등 데이터의 삽입 및 갱신 후 commit이나 rollback(취소)해야함
+이런걸 트랜잭션 처리 라고 함
+위에 Auto켜져 있으면 오토커밋모드임
+
+inner join 교집합, A와 B에 동시에 존재하는 data만 조인
+
+select
+	a.id id_a,
+	a.fruit fruit_a,
+	b.id id_b,
+	b.fruit fruit_b
+	-- 뒤에 칼럼 이름 적어줌
+	from basket_a a
+inner join basket_b b on
+	a.fruit = b.fruit ;
+-- fruit칼럼을 기준으로 조인
+
+ER diagram이 중요, 모든 정보는 ER diagram으로 표현
+
+select
+	c.customer_id ,
+	c.first_name ,
+	c.last_name ,
+	c.email ,
+	p.amount ,
+	p.payment_date
+from
+	customer c
+inner join payment p on
+	c.customer_id = c.customer_id
+where
+	c.customer_id = 2
+order by c.customer_id asc;
+
+이런식으러 where절로 조건 추가도 가능
+
+select
+	c.customer_id ,
+	c.first_name ,
+	c.last_name ,
+	c.email ,
+	p.amount ,
+	p.payment_date ,
+	s.first_name ,
+	s.last_name
+from
+	customer c
+inner join payment p on
+	c.customer_id = c.customer_id
+inner join staff s on 
+	p.staff_id  = s.staff_id ;
+
+하나 더 조인 가능
+
+
+select
+	A.ID as ID_A ,
+	A.FRUIT as FRUIT_A ,
+	B.ID as ID_B ,
+	B.FRUIT as FRUIT_B
+from
+	BASKET_A A
+left join BASKET_B B on
+	A.FRUIT = B.FRUIT;
+
+outer join은 기준 데이터는 다 가져오고 나머지는 매칭 되는 애만 가져옴
+null 생성 가능
+
+여기에 where b.id is null; 조건을 추가하면, left에서만 가져오게 됨
+
+
+
+left join BASKET_B -- 얘는 A기준
+right join BASKET_B -- 얘는 B기준
+
+
+
+self join은 걍 자기 테이블로 새로운 정보를 만드는건가?
+alias를 사용할 수 밖에 없음
+
+SELECT 
+	E.FIRST_NAME || ' ' || E.LAST_NAME as EMPLOYEE , 
+	M.FIRST_NAME || ' ' || M .LAST_NAME as MANAGER 
+FROM 
+	EMPLOYEE E 
+INNER JOIN EMPLOYEE M ON 
+	M.EMPLOYEE_ID = E.MANAGER_ID -- 임플로이 아이디와 매니저 아이디가 같은 row를 뽑아
+ORDER BY MANAGER;
+
+
+SELECT 
+	e.employee_id,
+	E.FIRST_NAME || ' ' || E.LAST_NAME as EMPLOYEE , 
+	M.FIRST_NAME || ' ' || M .LAST_NAME as MANAGER 
+FROM 
+	EMPLOYEE E 
+left JOIN EMPLOYEE M ON 
+	M.EMPLOYEE_ID = E.MANAGER_ID 
+ORDER BY e.employee_id;
+
+이런식으로 outer join도 가능
+
+
+부정형 조건
+상영시간은 동일하면서 필름 아이디는 다른것들(부정형)을 찾고싶다면?
+
+SELECT
+	F1.TITLE , F2.TITLE , F1.LENGTH 
+FROM 
+	FILM F1 
+INNER JOIN FILM F2 ON 
+	F1.FILM_ID <> F2.FILM_ID 
+AND F1.LENGTH = F2.LENGTH;
+
+
+
+SELECT
+	F1.TITLE , F2.TITLE , F1.LENGTH 
+FROM 
+	FILM F1 
+INNER JOIN FILM F2 ON 
+	F1.FILM_ID <> F2.FILM_ID 
+AND F1.LENGTH = F2.LENGTH
+where f1.length > 120
+order by f1.length desc;
+
+
+
+full outer join은 모르겠고 걍 다 가져오는거, 당연히 null 발생
+
+select
+	A.ID ID_A ,
+	A.FRUIT FRUIT_A ,
+	B.ID ID_B ,
+	B.FRUIT FRUIT_B
+from
+	BASKET_A A
+full outer join BASKET_B B on
+	A.FRUIT = B.FRUIT;
+
+출력 가능한 모든 데이터 다 가져옴
+
+
+cross join 출력 가능한 모든 경우의 수를 뽑음, row * row만큼  row가 나옴
+
+select
+	*
+from
+	CROSS_T1
+cross join CROSS_T2;
+
+t1과 t2를 크로스 조인함, 근데 얘는 밑에랑 같음
+
+select
+	*
+from
+	cross_t1,
+	cross_t2;
+
+즉 출력되는 정보가 같다면 코딩이 달라도 같음 sql문이다.
+
+
+nature join 두개의 테이블에서 같은 이름을 가진 컬럼간의 inner join 집합 결과를 출력
+가급적 inner join을 사용하자. 
+
+
+having 은 group by 한 애들중에 조건에 맞는애 뽑고
+where은 그 전에
+
+union all -- 동일한 형식의 frame(?)의 데이터를 합치는 것?
+
+SELECT BRAND , SEGMENT , SUM (QUANTITY) FROM SALES GROUP BY BRAND, SEGMENT 
+UNION ALL 
+SELECT BRAND , NULL , SUM (QUANTITY) FROM SALES GROUP BY BRAND 
+UNION ALL 
+SELECT NULL , SEGMENT , SUM (QUANTITY) FROM SALES GROUP BY SEGMENT 
+UNION ALL SELECT 
+NULL , NULL , SUM (QUANTITY) FROM SALES;
+
+위와 같이 union all 을 기준으로 같은 테이블을 네번 읽음
+당연히 성능도 저하되고 sql도 길어지니 유지보수가 어려워짐
+
+따라서
+select s.brand , s.segment , sum(s.quantity)
+from sales s 
+group by
+grouping sets (
+(s.brand, s.segment),
+(s.brand),
+(s.segment),
+()
+);
+요딴식으로 grouping sets 를 이용하여 내가 원하는 칼럼을 뽑음
+
+	grouping (s.brand) grouping_brand,
+	grouping (s.segment) grouping_segment,
+
+	select아래 이거 추가하면 1 , 0으로 해당 칼럼이 들어갔는지 표기해줌
+
+ 
+	case when grouping(s.brand) = 0 and grouping(s.segment) = 0 then '브랜드, 등급 별' 
+		 when grouping(s.brand) = 0 and grouping(s.segment) = 1 then '브랜드별'
+		 when grouping(s.brand) = 1 and grouping(s.segment) = 0 then '등급별'
+		 when grouping(s.brand) = 1 and grouping(s.segment) = 1 then '전체합계'
+		 else ''
+		 end as "집계기준",
+
+	요딴식으로 select아래 추가하면 각 칼럼의 정보를 입력해줌
+
+group by roll up https://blog.naver.com/regenesis90/222184481818
+

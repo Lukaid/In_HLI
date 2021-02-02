@@ -162,7 +162,8 @@ for k in range(len(f_t_tml.tmlcod)):
         
             max_quan = V_quantity[0] * tmp_tmp_quan[0] + V_quantity[1] * tmp_tmp_quan[1] + V_quantity[2] * tmp_tmp_quan[2]
             tmp.append(k)
-            tmp.append('%s -> %s' %(min_cost_flow.Tail(i), min_cost_flow.Head(i)))
+            tmp.append(min_cost_flow.Tail(i))
+            tmp.append(min_cost_flow.Head(i))
             tmp.append(unit_costs[i])
             tmp.append(solver.Objective().Value())
             tmp.append(tmp_tmp_quan[0])
@@ -180,9 +181,11 @@ for k in range(len(f_t_tml.tmlcod)):
 
 quantity_on_link = pd.DataFrame(quantity_on_link)
 quantity_on_link.columns = [
-    'Starting Node' , 'From -> To', 'Arc Unit Cost', 'Vehicle Cost', 
+    'Starting Node' , 'From', 'To', 'Arc Unit Cost', 'Vehicle Cost', 
     'Q_11', 'Q_8', 'Q_2.5', 
     'Real Quantity', 'Maxium Quantity', 'Loss Ratio', 'Remaining Capacities' ]
-print(quantity_on_link)
+#print(quantity_on_link)
 
-quantity_on_link.to_csv('Quantities & Vehicle_Allocation.csv')
+result = quantity_on_link.groupby(['From', 'To']).sum()
+result.to_csv('result.csv')
+#quantity_on_link.to_csv('Quantities & Vehicle_Allocation_2.csv')

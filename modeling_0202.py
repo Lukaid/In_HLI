@@ -73,22 +73,10 @@ for i in range(len(f_t_dis.tmlfrm)):
         unit_costs.append(int(f_t_dis.distance[i]))
         capacities.append(random.randrange(40, 50))
 
-# MIP Problem 계수, 변수 정의
-V_cost = [15, 12, 8]
-V_quantity = [11, 8, 2]
-V_t = ['11', '8', '2.5']
-V_idx = [idx for idx in range(20)]
-
-solver = pywraplp.Solver.CreateSolver('SCIP')
-status = solver.Solve()
-infinity = solver.infinity()
 
 
 
-
-
-
-# Main Part: Minimum Cost
+# Main Part: Minimum Cost Flow
 # k개의 starting Node를 각각 Minimum Cost Flows 돌림
 for k in range(len(f_t_tml.tmlcod)):
     
@@ -108,6 +96,7 @@ for k in range(len(f_t_tml.tmlcod)):
     for i in range(0, len(supplies)):
         min_cost_flow.SetNodeSupply(i, supplies[i])
 
+
     # Find the minimum cost flow between start_node and end_node
     if min_cost_flow.Solve() == min_cost_flow.OPTIMAL:
         pass
@@ -115,77 +104,120 @@ for k in range(len(f_t_tml.tmlcod)):
     else:
         print('%d:: There was an issue with the min cost flow input.' %k)
 
-    for i in range(min_cost_flow.NumArcs()):        
+    for i in range(min_cost_flow.NumArcs()):
+        tmp = []        
         if min_cost_flow.Flow(i) != 0:
             capacities[i] -= min_cost_flow.Flow(i) # i번째 arc에 물량을 둔 만큼 capa가 줄어듬
-            Vehicle = []
-            for t in range(len(V_t)):
-                Vehicle.append([])
-                for idx in range(len(V_idx)):
-                    Vehicle[t].append([])
-
-            for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
-                Vehicle[t][idx] = solver.IntVar(0.0, 1.0, 'V_%s_%d' %(V_t[t], idx))
-
-            Qant = 0
-            for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
-                Qant += V_quantity[t] * Vehicle[t][idx]
-            solver.Add(Qant >= min_cost_flow.Flow(i))
-
-            for t in range(len(V_t)):
-                for idx in range(len(V_idx) - 1):
-                    solver.Add(Vehicle[t][idx] >= Vehicle[t][idx + 1])
-
-            opt_value = 0
-            for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
-                opt_value += V_cost[t] * Vehicle[t][idx]
-
-            solver.Minimize(opt_value)
-            status = solver.Solve()
-            if status == pywraplp.Solver.OPTIMAL:
-                print('Solution:')
-                print('Objective value =', solver.Objective().Value())
-            count_V = 0
-            for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
-                count_V += Vehicle[t][idx].solution_value()
-            print(count_V)
-
-            for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
-                if Vehicle[t][idx].solution_value() != 0.0:
-                    print('V_%s_%d = ' %(V_t[t], idx), Vehicle[t][idx].solution_value())
-            tmp_tmp_quan = []
-            for t in range(len(V_t)):
-                tmp_tmp = []
-                for idx in range(len(V_idx)):
-                    tmp_tmp.append(Vehicle[t][idx].solution_value())
-                tmp_tmp_quan.append(sum(tmp_tmp))
-        
-            max_quan = V_quantity[0] * tmp_tmp_quan[0] + V_quantity[1] * tmp_tmp_quan[1] + V_quantity[2] * tmp_tmp_quan[2]
+            
             tmp.append(k)
             tmp.append(min_cost_flow.Tail(i))
             tmp.append(min_cost_flow.Head(i))
-            tmp.append(unit_costs[i])
-            tmp.append(solver.Objective().Value())
-            tmp.append(tmp_tmp_quan[0])
-            tmp.append(tmp_tmp_quan[1])
-            tmp.append(tmp_tmp_quan[2])
             tmp.append(min_cost_flow.Flow(i))
-            tmp.append(max_quan)
-            tmp.append("%2.2f%%" %((1 - min_cost_flow.Flow(i) / max_quan)*100))
+            tmp.append(unit_costs[i])
             tmp.append(capacities[i])
-            print(tmp)
-
             quantity_on_link.append(tmp)
-            tmp = []
+
 
 
 quantity_on_link = pd.DataFrame(quantity_on_link)
 quantity_on_link.columns = [
-    'Starting Node' , 'From', 'To', 'Arc Unit Cost', 'Vehicle Cost', 
-    'Q_11', 'Q_8', 'Q_2.5', 
-    'Real Quantity', 'Maxium Quantity', 'Loss Ratio', 'Remaining Capacities' ]
-#print(quantity_on_link)
+    'Starting Node' , 'From', 'To', 'Real Quantity', 'Arc Unit Cost', 'Remaining Capacities' ]
+print(quantity_on_link)
+result = quantity_on_link.groupby(['From', 'To'])['Real Quantity'].sum()
+result = pd.DataFrame(result)
+#result.columns = ['from', 'to', 'qauntity']
+result = result.reset_index()
+print()
+print(result)
+print()
+print(len(result['Real Quantity']))
 
-result = quantity_on_link.groupby(['From', 'To']).sum()
-result.to_csv('result.csv')
-#quantity_on_link.to_csv('Quantities & Vehicle_Allocation_2.csv')
+
+
+
+
+# MIP Problem 계수, 변수 정의
+V_cost = [15, 12, 8]
+V_quantity = [11, 8, 2]
+V_arc = [i for i in range(len(result['Real Quantity']))]
+V_t = ['11', '8', '2.5']
+V_idx = [idx for idx in range(20)]
+
+
+
+solver = pywraplp.Solver.CreateSolver('SCIP')
+status = solver.Solve()
+infinity = solver.infinity()
+
+
+Vehicle = []
+for i in range(len(V_arc)):
+    Vehicle.append([])
+    for t in range(len(V_t)):
+        Vehicle[i].append([])
+        for idx in range(len(V_idx)):
+            Vehicle[i][t].append([])
+                
+
+    for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
+        Vehicle[i][t][idx] = solver.IntVar(0.0, 1.0, 'V_%s_%d' %(V_t[t], idx))
+
+result_2 = []
+for i in range(len(V_arc)):
+
+    tmp = []
+    Qant = 0
+    for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
+        Qant += V_quantity[t] * Vehicle[i][t][idx]
+    solver.Add(Qant >= result['Real Quantity'][i])
+
+    for t in range(len(V_t)):
+        for idx in range(len(V_idx) - 1):
+            solver.Add(Vehicle[i][t][idx] >= Vehicle[i][t][idx + 1])
+
+    opt_value = 0
+    for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
+        opt_value += V_cost[t] * Vehicle[i][t][idx]
+
+    solver.Minimize(opt_value)
+    status = solver.Solve()
+    if status == pywraplp.Solver.OPTIMAL:
+        print('Solution:')
+        print('Objective value =', solver.Objective().Value())
+    count_V = 0
+    for t, idx in itertools.product(range(len(V_t)), range(len(V_idx))):
+        count_V += Vehicle[i][t][idx].solution_value()
+    print(count_V)
+
+    V_t_quan = []
+    for t in range(len(V_t)):
+        tmp_2 = []
+        for idx in range(len(V_idx)):
+            tmp_2.append(Vehicle[i][t][idx].solution_value())
+        V_t_quan.append(sum(tmp_2))
+
+    max_quan = V_quantity[0] * V_t_quan[0] + V_quantity[1] * V_t_quan[1] + V_quantity[2] * V_t_quan[2]
+
+
+    tmp.append(result['From'][i])
+    tmp.append(result['To'][i])
+    tmp.append(result['Real Quantity'][i])
+    tmp.append(count_V)
+    tmp.append(V_t_quan[0])
+    tmp.append(V_t_quan[1])
+    tmp.append(V_t_quan[2])
+    tmp.append(solver.Objective().Value())
+    tmp.append(max_quan)
+    tmp.append("%2.2f%%" %((1 - result['Real Quantity'][i] / max_quan)*100))
+    result_2.append(tmp)
+
+
+result_2 = pd.DataFrame(result_2)
+result_2.columns = [
+    'from', 'to', 'Real Quantity', 'Total_Vehicle',
+    'Q_11', 'Q_8', 'Q_2.5', 'Total_Arc_cost',
+    'max_quan', 'loss ratio'
+]
+
+
+result_2.to_csv('result_2.csv')

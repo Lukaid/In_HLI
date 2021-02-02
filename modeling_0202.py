@@ -15,6 +15,8 @@
 # sub의 경우, starting node와 from이 다르면 아래 hub의 경우와 같이 처리
 # hub의 경우, from & to 로 gruop_by하여 다시 배차해야할듯...
 
+# ---- 위의 수정사항 수정 완료 ----
+
 # 만약 period나 sequence를 고려하게 된다면?
 
 
@@ -201,12 +203,12 @@ for i in range(len(V_arc)):
 
     tmp.append(result['From'][i])
     tmp.append(result['To'][i])
-    tmp.append(result['Real Quantity'][i])
     tmp.append(count_V)
     tmp.append(V_t_quan[0])
     tmp.append(V_t_quan[1])
     tmp.append(V_t_quan[2])
     tmp.append(solver.Objective().Value())
+    tmp.append(result['Real Quantity'][i])
     tmp.append(max_quan)
     tmp.append("%2.2f%%" %((1 - result['Real Quantity'][i] / max_quan)*100))
     result_2.append(tmp)
@@ -214,10 +216,9 @@ for i in range(len(V_arc)):
 
 result_2 = pd.DataFrame(result_2)
 result_2.columns = [
-    'from', 'to', 'Real Quantity', 'Total_Vehicle',
+    'from', 'to', 'Total_Vehicle',
     'Q_11', 'Q_8', 'Q_2.5', 'Total_Arc_cost',
-    'max_quan', 'loss ratio'
+    'Real Quantity', 'max_quan', 'loss ratio'
 ]
-
 
 result_2.to_csv('result_2.csv')

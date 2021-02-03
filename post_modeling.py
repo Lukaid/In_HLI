@@ -1,21 +1,14 @@
 import pandas as pd
 import itertools
 
-result_2 = pd.read_csv("result_2.csv")
-result_2 = result_2.drop('Unnamed: 0', axis=1)
+result_2 = pd.read_csv("result_2.csv").drop('Unnamed: 0', axis=1)
 
 len_result_2 = len(result_2['from'])
 
-list_round = []
-list_oneway = []
-list_round_qaun = []
-
-list_round_idx = []
-list_oneway_idx = []
-list_round_tuple_idx = []
+list_round, list_oneway, list_round_qaun = [], [], []
+list_round_idx, list_oneway_idx, list_round_tuple_idx = [], [], []
 
 for i, j in itertools.product(range(len_result_2), range(len_result_2)):
-    chk = 0
     if list(result_2.loc[i][0:2]) == list(result_2.loc[j][0:2])[::-1]:
         if i not in list_round_idx:
             list_round_idx.append(i)
@@ -32,7 +25,6 @@ for i in list_round_idx:
 for i in list_oneway_idx:
     list_oneway.append(list(result_2.loc[i]))
 
-
 for i in list_round_tuple_idx:
     tmp = []
     tmp.append('%d <-> %d' %(result_2.loc[i[0]]['from'],result_2.loc[i[0]]['to']))
@@ -46,8 +38,6 @@ for i in list_round_tuple_idx:
     tmp.append(int(result_2.loc[i[0]]['Q_2.5'] - tmp[3]))
     tmp.append(int(result_2.loc[i[1]]['Q_2.5'] - tmp[3]))
     list_round_qaun.append(tmp)
-
-
 
 round = pd.DataFrame(list_round)
 round.columns = [

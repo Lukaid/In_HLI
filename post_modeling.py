@@ -35,7 +35,7 @@ for i in list_oneway_idx:
 
 for i in list_round_tuple_idx:
     tmp = []
-    tmp.append(i)
+    tmp.append('%d <-> %d' %(result_2.loc[i[0]]['from'],result_2.loc[i[0]]['to']))
     tmp.append(int(min(result_2.loc[i[0]]['Q_11'], result_2.loc[i[1]]['Q_11'])))
     tmp.append(int(min(result_2.loc[i[0]]['Q_8'], result_2.loc[i[1]]['Q_8'])))
     tmp.append(int(min(result_2.loc[i[0]]['Q_2.5'], result_2.loc[i[1]]['Q_2.5'])))
@@ -51,23 +51,24 @@ for i in list_round_tuple_idx:
 
 round = pd.DataFrame(list_round)
 round.columns = [
-    'from', 'to', 'Total_Vehicle',
+    'from', 'to', 'Real Quantity', 'Total_Vehicle',
     'Q_11', 'Q_8', 'Q_2.5', 'Total_Arc_cost',
-    'Real Quantity', 'max_quan', 'loss ratio'
+    'max_quan', 'loss ratio'
 ]
 
 oneway = pd.DataFrame(list_oneway)
 oneway.columns = [
-    'from', 'to', 'Total_Vehicle',
+    'from', 'to', 'Real Quantity', 'Total_Vehicle',
     'Q_11', 'Q_8', 'Q_2.5', 'Total_Arc_cost',
-    'Real Quantity', 'max_quan', 'loss ratio'
+    'max_quan', 'loss ratio'
 ]
 
 round_qaun = pd.DataFrame(list_round_qaun)
 round_qaun.columns = [
     'arc', 'round_Q_11', 'round_Q_8', 'round_Q_2.5', 
-    'oneway_up_Q_11', 'oneway_up_Q_8', 'oneway_up_Q_2.5',
-    'oneway_down_Q_11', 'oneway_down_Q_8', 'oneway_down_Q_2.5'
+    'oneway_up_Q_11', 'oneway_down_Q_11', 
+    'oneway_up_Q_8', 'oneway_down_Q_8', 
+    'oneway_up_Q_2.5', 'oneway_down_Q_2.5'
 ]
 
 

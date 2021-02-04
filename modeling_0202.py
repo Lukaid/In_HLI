@@ -129,6 +129,8 @@ result = quantity_on_link.groupby(['From', 'To'])['Real Quantity'].sum()
 result = pd.DataFrame(result)
 #result.columns = ['from', 'to', 'qauntity']
 result = result.reset_index()
+
+result.to_csv('result.csv')
 print()
 print(result)
 print()
